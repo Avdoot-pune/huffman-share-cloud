@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import SharedFile from "./pages/SharedFile";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index session={session} />} />
+            <Route path="/share/:shareId" element={<SharedFile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

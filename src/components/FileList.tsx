@@ -74,7 +74,7 @@ export const FileList = ({ userId, refreshTrigger }: FileListProps) => {
       if (decompressError) throw decompressError;
 
       // Create blob and download
-      const blob = await decompressedData.blob();
+      const blob = new Blob([decompressedData]);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -95,8 +95,40 @@ export const FileList = ({ userId, refreshTrigger }: FileListProps) => {
 
   const handleShare = (shareId: string) => {
     const shareUrl = `${window.location.origin}/share/${shareId}`;
-    navigator.clipboard.writeText(shareUrl);
-    toast.success("Share link copied to clipboard!");
+
+    if (navigator.clipboard && window.isSecureContext) {
+      // Use the modern clipboard API in secure contexts
+      navigator.clipboard.writeText(shareUrl)
+        .then(() => {
+          toast.success("Share link copied to clipboard!");
+        })
+        .catch(err => {
+          console.error('Failed to copy: ', err);
+          toast.error("Failed to copy share link.");
+        });
+    } else {
+      // Fallback for insecure contexts
+      const textArea = document.createElement("textarea");
+      textArea.value = shareUrl;
+      
+      // Make the textarea invisible
+      textArea.style.position = "absolute";
+      textArea.style.left = "-9999px";
+      
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        toast.success("Share link copied to clipboard!");
+      } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+        toast.error("Failed to copy share link.");
+      }
+      
+      document.body.removeChild(textArea);
+    }
   };
 
   const handleDelete = async (file: FileItem) => {
